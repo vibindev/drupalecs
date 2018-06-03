@@ -1,0 +1,53 @@
+---
+ - name: "Installing Ubuntu NGINX Repository"
+   apt_repository:
+       repo: ppa:nginx/stable
+
+ - name: "Installing Ubuntu NGINX"
+   package:
+    name: nginx
+    state: present
+    update_cache: yes
+   notify: start nginx
+
+ - name: Creating webroot folder
+   file:
+       path: /var/www/{{ domain_name }}
+       state: directory
+       owner: www-data
+       group: www-data
+
+ - name: create HTML test file
+   copy:
+       src: index.php
+       dest: /var/www/{{ domain_name }}/index.php
+       owner: www-data
+       group: www-data
+       mode: 0644
+       
+ - name: Setup NGINX Vhost
+   template:
+        src: vhost.conf.j2
+        dest: /etc/nginx/sites-available/{{ domain_name }}.conf
+
+ - name: Create Vhost symlink
+   file:
+        src: /etc/nginx/sites-available/{{ domain_name}}.conf
+        dest: /etc/nginx/sites-enabled/{{ domain_name }}.conf
+        state: link
+
+ - name: Setup NGINX Conf
+   template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+
+ - name: Remove default NGINX vhost
+   file:
+        path: /etc/nginx/sites-available/default
+        state: absent
+ 
+ - name: Remove default symlink
+   file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+   notify: restart nginx

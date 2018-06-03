@@ -1,0 +1,48 @@
+---
+ - name: Installing MySQL Server
+   apt:
+       name: 
+        - mysql-server
+        - python-mysqldb
+       update_cache: yes
+       state: present
+
+ - name: Create the directory /etc/mysql/conf.d
+   file: path=/etc/mysql/conf.d state=directory
+   notify:
+      - restart mysql
+ 
+ - name: Deploy mysql config to conf.d
+   template: src=mysql.cnf.j2 dest=/etc/mysql/conf.d/mysql.cnf
+   notify:
+      - restart mysql
+
+ - name: starting MySQL Server
+   service:
+       name: mysql
+       state: started
+       enabled: yes
+
+ - name: copy .my.cnf file with root password credentials
+   template: src=.my.cnf.j2 dest=~/.my.cnf mode=0600
+
+ - name: update mysql root password for all root accounts
+   mysql_user: name=root host={{ item }} password={{ mysql_root_db_pass }}
+   with_items:
+    - "{{ ansible_hostname }}"
+    - 127.0.0.1
+    - ::1
+    - localhost
+
+ - name: creating the DB
+   mysql_db:
+       name: "{{ drupal_db }}"
+       state: present
+
+ - name: Creating the DB User
+   mysql_user: 
+       name: "{{ drpual_db_user }}"
+       password: "{{ drpupal_db_user_password }}"
+       priv: '*.*:ALL,GRANT'
+       state: present
+

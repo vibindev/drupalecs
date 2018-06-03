@@ -1,0 +1,20 @@
+--- 
+- name: Installing PHP
+  apt: 
+    name: 
+      - php
+      - php-mcrypt
+      - php-mysql
+      - php7.0-gd
+      - php7.0-mbstring
+      - php7.0-json
+      - php7.0-mcrypt
+      - php7.0-mysql
+    state: present
+    update_cache: true
+   
+- name: Restarting PHP-FPM
+  service: 
+    name: php7.0-fpm
+    state: started
+    enabled: yes

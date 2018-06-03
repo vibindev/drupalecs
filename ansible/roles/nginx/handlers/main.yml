@@ -1,0 +1,12 @@
+---
+# Start NGINX
+ - name: start nginx
+   service:
+     name: nginx
+     state: started
+
+# Reload NGINX
+ - name: restart nginx
+   service:
+     name: nginx
+     state: restarted
